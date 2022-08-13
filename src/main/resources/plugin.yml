@@ -1,0 +1,14 @@
+name: WWRPDiscordMC
+version: 2.0.0
+main: me.velikoss.WWRPDiscord
+api-version: 1.19
+authors: [ velikoss ]
+description: WWRP Discord
+softdepend: [PlaceholderAPI, Chatty]
+commands:
+  dcdebug:
+  sound:
+  join:
+    permission: "fratch.sponsor"
+  quit:
+    permission: "fratch.sponsor"
