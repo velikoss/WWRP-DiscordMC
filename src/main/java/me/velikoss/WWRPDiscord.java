@@ -2,6 +2,8 @@
 // Class Version: 17
 package me.velikoss;
 
+package me.velikoss;
+
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.google.gson.GsonBuilder;
 import java.awt.Color;
@@ -24,6 +26,7 @@ import java.util.logging.Level;
 import javax.imageio.ImageIO;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.velikoss.PictureDrawer;
+import me.velikoss.chat.ChatLogger;
 import me.velikoss.lang.lang;
 import me.velikoss.sounds.joinSound;
 import me.velikoss.sounds.joinSoundT;
@@ -289,16 +292,6 @@ public class WWRPDiscord extends JavaPlugin implements CommandExecutor, Listener
     }
 
     @EventHandler
-    public void onTick(ServerTickEndEvent e) {
-        for (GifDrawer gifDrawer : this.gifs) {
-            for (Player player : gifDrawer.handlersP) {
-                Pair che = (Pair)gifDrawer.handlers.get(player);
-                gifDrawer.render((MapView)che.getRight(), (MapCanvas)che.getLeft(), player);
-            }
-        }
-    }
-
-    @EventHandler
     public void onDeath(PlayerDeathEvent e) throws MalformedURLException, ParseException {
         String replace = "???";
         String comp = PlainTextComponentSerializer.plainText().serialize(Objects.requireNonNull(e.deathMessage()));
@@ -382,30 +375,18 @@ public class WWRPDiscord extends JavaPlugin implements CommandExecutor, Listener
                         for (MapRenderer mapRenderer : map.getRenderers()) {
                             map.removeRenderer(mapRenderer);
                         }
-                        if (e.getMessage().getContent().endsWith(".gif")) {
+                        BufferedImage bufferedImage;
+                        try {
                             double width = e.getWidth().get().intValue();
                             height = e.getHeight().get().intValue();
-                            try {
-                                File file = new File(new URL(e.getUrl().toString() + "?width=" + Math.max(width / Math.floor(width / 128.0), 128.0) + "&height=" + Math.max(height / Math.floor(height / 128.0), 128.0)).toURI());
-                                map.addRenderer((MapRenderer)new GifDrawer(file, MapView.Scale.NORMAL, 0, 0));
-                            }
-                            catch (IOException | URISyntaxException ex) {
-                                ex.printStackTrace();
-                            }
-                        } else {
-                            BufferedImage bufferedImage;
-                            try {
-                                double width = e.getWidth().get().intValue();
-                                height = e.getHeight().get().intValue();
-                                bufferedImage = ImageIO.read(new URL(e.getUrl().toString() + "?width=" + Math.max(width / Math.floor(width / 128.0), 128.0) + "&height=" + Math.max(height / Math.floor(height / 128.0), 128.0)));
-                            }
-                            catch (IOException ex) {
-                                this.getLogger().log(Level.WARNING, "Using alternative download method (SLOWER)");
-                                bufferedImage = e.downloadAsImage().get();
-                            }
-                            Image image = bufferedImage.getScaledInstance(128, 128, 2);
-                            map.addRenderer((MapRenderer)new PictureDrawer(WWRPDiscord.toBufferedImage(image), MapView.Scale.NORMAL, 0, 0));
+                            bufferedImage = ImageIO.read(new URL(e.getUrl().toString() + "?width=" + Math.max(width / Math.floor(width / 128.0), 128.0) + "&height=" + Math.max(height / Math.floor(height / 128.0), 128.0)));
                         }
+                        catch (IOException ex) {
+                            this.getLogger().log(Level.WARNING, "Using alternative download method (SLOWER)");
+                            bufferedImage = e.downloadAsImage().get();
+                        }
+                        Image image = bufferedImage.getScaledInstance(128, 128, 2);
+                        map.addRenderer((MapRenderer)new PictureDrawer(WWRPDiscord.toBufferedImage(image), MapView.Scale.NORMAL, 0, 0));
                         ItemStack item = new ItemStack(Material.FILLED_MAP, 1);
                         MapMeta meta = (MapMeta)item.getItemMeta();
                         meta.setMapView(map);
